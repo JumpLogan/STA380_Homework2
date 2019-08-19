@@ -1,0 +1,34 @@
+---
+title: "Question6 Association rule mining"
+output: github_document
+---
+
+# Read data
+Read data files and create transactions object.
+```{r}
+library(tidyverse)
+library(arules)  # has a big ecosystem of packages built around it
+library(arulesViz)
+
+groceries = read.transactions("groceries.txt", sep=',')
+summary(groceries)
+```
+
+# Generate rules
+We try apriori algorithm with 0.01 support and 0.2 confidence. This choice will  drop rarer purchases, but weaker relationships will be kept.
+```{r}
+groceriesrules <- apriori(groceries,parameter=list(support=.01, confidence=.2, maxlen=10))
+
+plot(groceriesrules, measure = c("support", "lift"), shading = "confidence")
+plot(groceriesrules, measure = c("support", "confidence"), shading = "lift")
+plot(groceriesrules, method='two-key plot')
+```
+
+# Choose a subset
+Greater lift values indicate stronger associations. We choose the rule with a value greater than 2. The lift parameter ensures that very weak relationships are still dropped. At these levels, we see that a variety of grocery items--dairy, fruits, and meats--are associated with the purchase of root vegetables. Furthermore, we also see that buying any type of dairy (especially in conjunction with a produce item) is associated with buying another type. That's make sense in real life.
+```{r}
+subset_grule <- subset(groceriesrules, subset=lift > 2)
+inspect(subset_grule)
+plot(subset_grule, method='graph')
+plot(head(subset_grule, 10, by='lift'), method='graph')
+```
