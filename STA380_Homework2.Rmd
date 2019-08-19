@@ -1,0 +1,841 @@
+---
+title: "STA380_Homework2"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Q1_GreenBuilding
+
+```{r}
+library(readr)
+library(dplyr)
+green <- read.csv('greenbuildings.csv') %>% as.tbl
+head(green)
+green$leasing_rate = (green$leasing_rate * .01)
+revenue = (green$Rent * green$leasing_rate)
+green$Revenue = revenue
+```
+# class a buildings tend to be larger in size and greener 
+```{r}
+library(ggplot2)
+ggplot(data = green)+
+  geom_point(mapping = aes(x=size, y=Revenue, color=green_rating))+
+  facet_wrap(~ class_a)
+```
+# From the density plot, we identify that green buildings tend to have more stories. 
+```{r}
+ggplot(green) + 
+  geom_histogram(aes(x=stories, y=stat(density)), binwidth=2) + 
+  facet_grid(green_rating~.)
+```
+# The density plot shows that green buildings which are 5 years old and younger tend to have more stories than non-green buildings 
+```{r}
+library(dplyr)
+green123 = green %>%
+  filter(age <6) 
+ggplot(green123) + 
+  geom_histogram(aes(x=stories, y=stat(density)), binwidth=2,fill="orange") + 
+  facet_grid(green_rating~.)#+ scale_fill_gradient("density", low="green", high="red")
+```
+
+# Green buildings are better clustered than non-green buildings 
+```{r}
+attach(green)
+ggplot(green) + 
+  geom_histogram(aes(x=cluster, y=stat(density)), binwidth=2) + 
+  facet_grid(green_rating~.)
+```
+
+```{r}
+greenbuildings <- read.csv('greenbuildings.csv') %>% as.tbl
+greenbuildings$Revenue = revenue
+greenbuildings$leasing_rate = (greenbuildings$leasing_rate * .01)
+revenue = (greenbuildings$Rent * greenbuildings$leasing_rate)
+```
+
+# Income Porjection 
+# In the 10-year project, both green and nongreen buildings have negative incomes 
+```{r}
+total_green2 = ((((36.86412*250000)*10)-5000000)/1000000) 
+total_nongreen2 = (((22.17286*250000)*10)/1000000) 
+GreenBuilding = (total_green2)
+NonGreenBuilding = (total_nongreen2)
+NonGreenCost = 100
+GreenCost = 105
+df = data.frame(Years=c(10),NonGreenBuilding, GreenBuilding, GreenCost, NonGreenCost)
+Income1= GreenBuilding-GreenCost
+Income2 =NonGreenBuilding-NonGreenCost
+x <- data.frame("Green" = c("Green", "Non-Green"), "Dollar" = c(105,100,-17.8397, -44.56785), "Revenue" = c("Total Expense","Total Expense","Income","Income"), stringsAsFactors = FALSE)
+x
+ggplot(data = x, aes(x = x$Green, y =x$Dollar, fill = x$Revenue)) + 
+    geom_bar(stat="identity")+ coord_flip() +ggtitle('10 Year Revenue Projection')
+```
+
+# In the 15-year Projection, the income for green buildings becomes positive, but the income for non-green buildings are still negative 
+```{r}
+total_green3 = ((((36.86412*250000)*15)-5000000)/1000000) 
+total_nongreen3 = (((22.17286*250000)*15)/1000000) 
+GreenBuilding = (total_green3)
+NonGreenBuilding = (total_nongreen3)
+NonGreenCost = 100
+GreenCost = 105
+df = data.frame(Years=c(15),NonGreenBuilding, GreenBuilding, GreenCost, NonGreenCost)
+Income1 = GreenBuilding - GreenCost 
+Income2 = NonGreenBuilding - NonGreenCost
+x <- data.frame("Green" = c("Green", "Non-Green"), "Dollar" = c(105,100,28.24045, -16.85178), "Revenue" = c("Total Expense","Total Expense","Income","Income"), stringsAsFactors = FALSE)
+x
+ggplot(data = x, aes(x = x$Green, y =x$Dollar, fill = x$Revenue)) + 
+    geom_bar(stat="identity")+ coord_flip() +ggtitle('15 Year Revenue Projection')
+```
+
+# In the 20-year Projection, the income for green buildings largely exceeds non-green buildings 
+```{r}
+total_green = ((((36.86412*250000)*20)-5000000)/1000000) 
+total_nongreen = (((22.17286*250000)*20)/1000000) 
+GreenBuilding = (total_green)
+NonGreenBuilding = (total_nongreen)
+x <- data.frame("Green" = c("Green", "Non-Green"), "Dollar" = c(105,100,74, 11), "Revenue" = c("Total Expense","Total Expense","Income","Income"), stringsAsFactors = FALSE)
+x
+ggplot(data = x, aes(x = x$Green, y =x$Dollar, fill = x$Revenue)) + 
+    geom_bar(stat="identity")+ coord_flip() +ggtitle('20 Year Revenue Projection')#+scale_fill_brewer(palette = 11)
+```
+
+# Q2_Flights
+First we wanted to get an understanding of the frequency of flights. We did this by plotting how many flights there were by month, day of the month and day of the week. 
+
+```{r}
+library(ggplot2)
+
+library(readr)
+data <- read_csv("ABIA.csv")
+```
+
+# Number of flights by month 
+```{r}
+data$Month <- as.factor(data$Month)
+ggplot(data, aes(x=Month, fill=Month))+geom_bar()
+```
+
+# Number of flights by month of year, day of week 
+```{r}
+data$DayOfWeek <- as.factor(data$DayOfWeek)
+ggplot(data, aes(x=DayOfWeek, fill=Month))+geom_bar()
+```
+We then wanted to get an understanding of which carrier had the most flights. 
+
+# Number of flights by unique carrier 
+```{r}
+ggplot(data, aes(x=UniqueCarrier, fill=Month))+geom_bar()
+```
+
+We chose a subset of the 6 most frequent fliers and examined carrier delays to see which carrier had the most delays. YV seemed to have the most delays consistently each month. 
+
+# Number of Delay by Month for each carrier 
+```{r}
+
+carrier_list = c('AA', 'WN', 'CO', 'B6', 'XE', 'YV')
+
+
+delay_carrier = data %>%
+  filter(UniqueCarrier %in% carrier_list) %>%
+  group_by(Month, UniqueCarrier) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE))
+
+ggplot(delay_carrier) + 
+  geom_bin2d(aes(x=Month, y=CarrierDelay, fill=UniqueCarrier)) + ggtitle('Average Carrier Delay by Month') + facet_grid(~UniqueCarrier)
+```
+
+Next we examined all the different kinds of delays to see which was the most prevelant each month. Carrier delay was the worst in July, security was the worst in September, late aircraft was the worst in December and weather was the worst in Feb and Mar.
+
+# Different kinds of delays 
+```{r}
+delay_month = data %>%
+  group_by(Month) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            Total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+ggplot(delay_month) + 
+  geom_bin2d(aes(x=Month, y=Total, fill=Month)) + ggtitle('Total Delay by Month')
+```
+
+
+
+Next we picked the most frequent destinations and looked at which had the most different kinds of delays.
+
+# Total Delay by Destination  
+```{r}
+#sort(table(data$Dest), decreasing = TRUE)
+
+
+dest_large = c('DAL', 'DFW', 'IAH', 'PHX', 'DEN', 'ORD', 'HOU', 'ATL')
+
+dest_total = data %>%
+  filter(Dest %in% dest_large) %>%
+  group_by(Dest) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            Total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+
+ggplot(dest_total) + 
+  geom_bin2d(aes(x=Dest, y=Total, fill=Dest)) + ggtitle('Total Delay by Destination')
+
+
+
+```
+
+
+Next we picked our worst airports to travel to and looked at which month was the worst to travel to each. 
+# Total Delay by Destination and Month 
+```{r}
+dest_ = c('DAL', 'DEN', 'HOU')
+
+dest_small = data %>%
+  filter(Dest %in% dest_) %>%
+  group_by(Dest, Month) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+
+ggplot(dest_small) + 
+  geom_bin2d(aes(x=Month, y=total, fill=Dest)) + ggtitle('Total Delay by Destination and Month') + facet_grid(~Dest)
+
+```
+
+Then we wanted to see how carriers compared at each of our worst airports. There were only two carriers that flew to Dallas. 
+# Dallas Total Delay by Carrier 
+```{r}
+dest_dal = data %>%
+  filter(Dest == 'DAL') %>%
+  group_by(Dest, Month, UniqueCarrier) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+
+ggplot(dest_dal) + 
+  geom_bin2d(aes(x=Month, y=total, fill=UniqueCarrier)) + ggtitle('Dallas Total Delay by Carrier')
+
+
+
+
+```
+
+There were five that flew to Denver.
+# Denver Total Delay by Carrier 
+```{r}
+
+
+dest_den = data %>%
+  filter(Dest == 'DEN') %>%
+  group_by(Dest, Month, UniqueCarrier) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+
+ggplot(dest_den) + 
+  geom_bin2d(aes(x=Month, y=total, fill=UniqueCarrier)) + ggtitle('Denver Total Delay by Carrier') 
+
+
+
+
+
+```
+
+And finally, there was only one that flew to Houston. 
+# Houson Total Delay by carrier 
+```{r}
+dest_hou = data %>%
+  filter(Dest == 'HOU') %>%
+  group_by(Dest, Month, UniqueCarrier) %>%
+  summarize(CarrierDelay = mean(CarrierDelay, na.rm=TRUE),
+            WeatherDelay = mean(WeatherDelay, na.rm=TRUE),
+            SecurityDelay = mean(SecurityDelay, na.rm=TRUE),
+            LateAircraftDelay = mean(LateAircraftDelay, na.rm=TRUE),
+            total = CarrierDelay + WeatherDelay + SecurityDelay + LateAircraftDelay)
+
+ggplot(dest_hou) + 
+  geom_bin2d(aes(x=Month, y=total, fill=UniqueCarrier)) + ggtitle('Houston Total Delay (only one carrier)')
+
+
+
+
+```
+
+# Q3_Portfolio
+## Key summary
+There have been arguments about building a 'safer' portfolio. By 'safer,' we mean the portfolio is less volatile. The following are some of the most common ideas.
+
+**1. Hedge Funds is safer**
+
+Professional fund managers actively manage hedge Funds, and some people believe that makes it 'safer' to invest in a hedge fund because these fund managers have skills and knowledge to prevent the fund from suffering colossal loss.
+
+We use ETFs that track hedge fund's investments to build our portfolio. We picked top 10 (by total assets) ETFs that are categorized in hedge funds from eftdb.co. Then select 5 ETFs that have 5-year data to run our simulation. 
+
+The hedge fund portfolio has a 20-day 5% VaR of around USD 3,000. 
+
+
+**2. Real Estate is safer**
+
+A lot of people think real estate investment is safer because the market value of real estate assets doesn't change all the time as the stock market does. Thus, we built a portfolio using five real-estate ETFs. However, it turned out the portfolio has a 20-day 5% VaR of around USD 6,500. It's two times as the VaR of the hedge fund portfolio.
+
+**3. Fixed-income securities and stocks**
+
+Some say we should diversify the portfolio by investing in different types of security to make it less volatile. We created a portfolio that consists of three stock ETFs and two fixed-income ETFs. The VaR is about the same level as the real-estate portfolio. 
+
+
+### set library and functions
+
+```{r, message=FALSE}
+library(mosaic)
+library(quantmod)
+library(foreach)
+get_allreturn <- function(usesymbols){
+  # get 5-years data
+  for( i in c(1:length(usesymbols))){ 
+    usesymbols[[i]] = usesymbols[[i]][index(usesymbols[[i]]) >= startdate]
+  }
+  
+  # for( i in c(1:length(usesymbols))){ 
+  #   print(head(usesymbols[[i]])) 
+  # }
+  
+  # Combine close to close changes in a single matrix
+  all_returns = NULL
+  for( i in c(1:length(usesymbols))){ 
+    if(is.null(all_returns)){
+      all_returns = ClCl(usesymbols[[i]])
+    } else {
+      all_returns = cbind(all_returns, ClCl(usesymbols[[i]]))
+    }
+  }
+  names(all_returns) = paste0(usesymbolsnames, '.ClCl')
+  all_returns = as.matrix(na.omit(all_returns))
+  
+  return(all_returns)
+}
+get_sim1 <- function(all_returns, 
+                     initial_wealth = 10000, 
+                     nsim=5000, 
+                     weights = c(0.2, 0.2, 0.2, 0.2, 0.2), 
+                     n_days = 20)
+{
+  sim1 = foreach(i=1:nsim, .combine='rbind') %do% {
+  	total_wealth = initial_wealth
+  	holdings = weights * total_wealth
+  	wealthtracker = rep(0, n_days)
+  	for(today in 1:n_days) {
+  		return.today = resample(all_returns, 1, orig.ids=FALSE)
+  		holdings = holdings + holdings*return.today
+  		total_wealth = sum(holdings)
+  		wealthtracker[today] = total_wealth
+  		holdings = weights * total_wealth
+  	}
+  	wealthtracker
+  }
+  return(sim1)
+}
+```
+
+### Hedge fund
+
+**input symbols**
+
+```{r, message=FALSE}
+#input#######################
+startdate = as.Date('2014-8-17')
+mystocks = c("MNA", "FVC", "WTMF", "PUTW", "GMOM", "RLY", "BEMO", "CPI", "JPMF", "RYZZ")
+##############################
+getSymbols(mystocks)
+#input######################################
+mysymbols = list(MNA, FVC, WTMF, PUTW, GMOM, RLY, BEMO, CPI, JPMF, RYZZ)
+############################################
+# don't know how to append element if list, just pick symbols mannually
+for(i in c(1:length(mysymbols))){
+  print( paste(mystocks[[i]], min(index(mysymbols[[i]])) <= startdate))
+}
+```
+
+**decide symbols**
+
+```{r}
+# pick symbols mannually ################################
+usesymbols = list(MNA, FVC, WTMF, RLY, CPI)
+usesymbolsnames = list("MNA", "FVC", "WTMF", "RLY", "CPI")
+##########################################################
+```
+
+**pre-process data, ClCl, take a look**
+
+```{r}
+all_returns = get_allreturn(usesymbols)
+# check if anything weried
+head(all_returns)
+pairs(all_returns)
+```
+
+**simulation**
+
+```{r}
+initial_wealth = 100000
+n_days = 20
+sim1 = get_sim1(all_returns=all_returns, initial_wealth = initial_wealth, n_days=n_days)
+# Profit/loss
+mean(sim1[,n_days])
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+quantile(sim1[,n_days]- initial_wealth, .05)
+```
+
+### Real Estate
+
+**input symbols**
+
+```{r, message=FALSE}
+#input#######################
+startdate = as.Date('2014-8-17')
+mystocks = c("VNQ",	"SCHH",	"IYR",	"XLRE",	"RWR",	"ICF",	"USRT",	"REM",	"FREL",	"REZ",	"BBRE")
+##############################
+getSymbols(mystocks)
+#input######################################
+mysymbols = list(VNQ,	SCHH,	IYR,	XLRE,	RWR,	ICF,	USRT,	REM,	FREL,	REZ,	BBRE)
+############################################
+# don't know how to append element if list, just pick symbols mannually
+for(i in c(1:length(mysymbols))){
+  print( paste(mystocks[[i]], min(index(mysymbols[[i]])) <= startdate))
+}
+```
+
+**decide symbols**
+
+```{r}
+# pick symbols mannually ################################
+usesymbols = list(VNQ, SCHH, IYR, RWR, ICF)
+usesymbolsnames = list("VNQ", "SCHH", "IYR", "RWR", "ICF")
+##########################################################
+```
+
+**pre-process data, ClCl, take a look**
+
+```{r}
+all_returns = get_allreturn(usesymbols)
+# check if anything weried
+head(all_returns)
+pairs(all_returns)
+```
+
+```{r}
+initial_wealth = 100000
+n_days = 20
+sim1 = get_sim1(all_returns=all_returns, initial_wealth = initial_wealth, n_days=n_days)
+# Profit/loss
+mean(sim1[,n_days])
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+quantile(sim1[,n_days]- initial_wealth, .05)
+```
+
+
+### Stocks + fixed income 
+
+**options from etfs from All Cap Equities ETFs**
+
+IWR	IWS	VXF	ARKK	TILT
+
+**options from Government Bonds ETFs**
+
+SHV	IEF	SHY	TLT	GOVT
+
+**make stock to fixed-income ratio as 3:2**
+
+
+```{r, message=FALSE}
+#input#######################
+startdate = as.Date('2014-8-17')
+mystocks = c("IWR",	"IWS",	"VXF",	"ARKK",	"TILT", "SHV",	"IEF",	"SHY",	"TLT",	"GOVT")
+##############################
+getSymbols(mystocks)
+#input######################################
+mysymbols = list(IWR,	IWS,	VXF,	ARKK,	TILT, SHV,	IEF,	SHY,	TLT,	GOVT)
+############################################
+# don't know how to append element if list, just pick symbols mannually
+for(i in c(1:length(mysymbols))){
+  print( paste(mystocks[[i]], min(index(mysymbols[[i]])) <= startdate))
+}
+```
+
+**decide symbols**
+
+```{r}
+# pick symbols mannually ################################
+usesymbols = list(IWR, IWS, VXF, SHV, IEF)
+usesymbolsnames = list("IWR", "IWS", "VXF", "SHV", "IEF")
+##########################################################
+```
+
+
+**pre-process data, ClCl, take a look**
+
+```{r}
+all_returns = get_allreturn(usesymbols)
+# check if anything weried
+head(all_returns)
+pairs(all_returns)
+```
+
+```{r}
+initial_wealth = 100000
+n_days = 20
+sim1 = get_sim1(all_returns=all_returns, initial_wealth = initial_wealth, n_days=n_days)
+# Profit/loss
+mean(sim1[,n_days])
+hist(sim1[,n_days]- initial_wealth, breaks=30)
+quantile(sim1[,n_days]- initial_wealth, .05)
+```
+
+# Q4_MarketSeg
+```{r}
+library(dplyr)
+mkt_seg = read.csv("social_marketing.csv") %>% as.tbl
+```
+# Method 1: K-means clustering 
+# Exploting Correlations between features 
+```{r}
+#install.packages("corrplot")
+library(corrplot)
+#str(mkt_seg)
+cormp <- cor(mkt_seg[c(2:37)])
+cex.before <- par("cex")
+par(cex = 0.7)
+corrplot(cormp, method ='shade',tl.cex = 0.65)
+#par(cex = cex.before)
+# strong corelation between personal fitness and health_nutrition 
+# online gaming vs college_uni - 0.77
+# travel vs politics - 0.66 
+# beauty vs cooking - 0.66 
+cor(mkt_seg$politics, mkt_seg$travel) # 0.66 
+cor(mkt_seg$online_gaming, mkt_seg$college_uni) # 0.77
+cor(mkt_seg$personal_fitness,mkt_seg$health_nutrition) #0.81
+cor(mkt_seg$religion, mkt_seg$sports_fandom)
+#cormp
+#as.data.frame(apply(cormp, 2, function(x) ifelse (abs(x)>=0.6,x,"NA")))
+```
+```{r}
+#summary(mkt_seg)
+#names(mkt_seg)
+raw_features = mkt_seg[-1]
+features = scale(raw_features,center = T, scale = T)
+mu = attr(features,"scaled:center")
+sigma = attr(features,"scaled:scale")
+#nrow(mkt_seg) #7882
+#nrow(na.omit(mkt_seg))
+set.seed(66)
+kmeans=kmeans(features, 5)
+length(which(kmeans$cluster == 1)) 
+length(which(kmeans$cluster == 2)) 
+length(which(kmeans$cluster == 3)) 
+length(which(kmeans$cluster == 4)) 
+length(which(kmeans$cluster == 5)) 
+```
+# Finding Number of Clusters 
+```{r}
+library(foreach)
+library(dplyr)
+library(tidyverse)
+set.seed(2)
+mkt_seg = read.csv("social_marketing.csv") %>% as.tbl
+mkt_seg=na.omit(mkt_seg)
+raw_features = mkt_seg[-1]
+features = scale(raw_features,center = T, scale = T)
+k_grid = seq(1,50, by=1)
+SSE_grid = foreach(k=k_grid, .combine = "c") %do% {
+   cluster_k = kmeans(features,k,nstart=5) 
+   cluster_k$tot.withinss
+ }
+plot(k_grid, SSE_grid, xlim=c(0,20))
+```
+# CH Index - measure goodness of fit
+# Find the K that maximize CH_grid 
+```{r}
+N=nrow(mkt_seg)
+CH_grid = foreach(k=k_grid, .combine = "c") %do% {
+   W = cluster_k$tot.withinss
+   B = cluster_k$betweenss
+   CH = (B/W)*((N-k)/(k-1))
+   CH
+ }
+plot(k_grid, CH_grid)
+```
+From the within cluster sum-of-square plot and the CH index plot, we determine that the optimal number of clusters is between 2 and 15. We would like to use 5 as our number of clusters. 
+# K-means clustering 
+```{r}
+set.seed(8)
+plot(mkt_seg[c("outdoors","computers")],col=kmeans$cluster)
+names(mkt_seg)
+qplot(food, cooking, data=mkt_seg, color=factor(kmeans$cluster))
+qplot(mkt_seg$online_gaming,mkt_seg$college_uni,color=factor(kmeans$cluster))
+qplot(mkt_seg$art,mkt_seg$music,color=factor(kmeans$cluster))
+qplot(mkt_seg$small_business,mkt_seg$art,color=factor(kmeans$cluster))
+qplot(mkt_seg$personal_fitness,mkt_seg$health_nutrition,color=factor(kmeans$cluster)) 
+qplot(mkt_seg$politics,mkt_seg$travel,color=factor(kmeans$cluster))
+qplot(mkt_seg$politics,mkt_seg$current_events,color=factor(kmeans$cluster))
+qplot(mkt_seg$politics,mkt_seg$small_business,color=factor(kmeans$cluster))
+# cluster 1 
+qplot(mkt_seg$beauty,mkt_seg$cooking,color=factor(kmeans$cluster)) 
+qplot(mkt_seg$cooking, mkt_seg$fashion,color=factor(kmeans$cluster))
+# cluster 2
+qplot(mkt_seg$politics,mkt_seg$travel,color=factor(kmeans$cluster))
+qplot(mkt_seg$politics,mkt_seg$news,color=factor(kmeans$cluster))
+qplot(mkt_seg$politics,mkt_seg$small_business,color=factor(kmeans$cluster))
+# cluster 3
+qplot(mkt_seg$religion,mkt_seg$sports_fandom,color=factor(kmeans$cluster)) 
+qplot(mkt_seg$family,mkt_seg$parenting,color=factor(kmeans$cluster))
+# cluster 4 
+qplot(mkt_seg$politics,mkt_seg$current_events,color=factor(kmeans$cluster))
+# cluster 5 
+qplot(mkt_seg$adult,mkt_seg$spam,color=factor(kmeans$cluster)) # cluster 5 
+```
+# Clustering Results 
+```{r}
+a=which(kmeans$cluster == 1)
+b=which(kmeans$cluster == 2)
+c=which(kmeans$cluster == 3)
+d=which(kmeans$cluster == 4)
+e=which(kmeans$cluster == 5)
+library(scales)
+cluster1 = mkt_seg[a,]
+Beauty = sum(cluster1$beauty)/sum(mkt_seg$beauty)
+percent(Beauty)
+cluster2 = mkt_seg[b,]
+Politics = sum(cluster2$politics)/sum(mkt_seg$politics)
+percent(Politics)
+cluster3 = mkt_seg[c,]
+Religion = sum(cluster3$religion)/sum(mkt_seg$religion)
+percent(Religion)
+cluster4 = mkt_seg[d,]
+Current_events = sum(cluster4$current_events)/sum(mkt_seg$current_events)
+percent(Current_events)
+cluster5 = mkt_seg[e,]
+spam = sum(cluster5$spam)/sum(mkt_seg$spam)
+percent(spam)
+clusters <- c('cluster1', 'cluster2', 'cluster3', 'cluster4','cluster5') 
+category <- c('Beauty', 'Politics', 'Religion', 'Current_events','Spam')
+Percentage <- c(percent(Beauty),percent(Politics),percent(Religion),percent(Current_events),percent(spam))
+data.frame(clusters, category, Percentage)%>% as.tbl
+```
+From the visualisation plots, we determine that there are five clusters in the twitter followers for the customer brand:
+cluster 1: customers who are potentially young ladies who are interested in beauty, cooking, music, art, and fashion \newline
+cluster 2: customers who are interested politics and people who are fond of traveling \newline
+cluster 3: customers who are family-oriented and interested in religion \newline
+cluster 4: customers who are interested in following political news and current events \newline
+cluster 5: customers who are interested in posting "adult" contents posts are as well as who frequently spam. \newline 
+# Method 2: PCA analysis 
+```{r}
+pc = prcomp(features, scale=TRUE)
+#pc # values are eigenvector in each PC 
+# summary(pc)
+# PC25 explain 91% of the variance 
+plot(pc,type="l")
+bp = biplot(pc, scale=0, cex=0.3)
+# Extract PC scores 
+#str(pc)
+#pc$x
+df <- cbind(features, pc$x[, 1:2])
+#head(df)
+# Plot with ggplot 
+library(ggplot2)
+df = data.frame(df)
+ggplot(df, aes(PC1, PC2)) +  
+  geom_point(shape =21, col='black')
+```
+```{r}
+#pc$x[,1:25]
+df = data.frame(pc$x[,1:25])
+#df
+sort(pc$rotation[,1]) 
+#religion food parenting sports_fandom (top negative)
+sort(pc$rotation[,2]) # sports_fandom religion parenting food (top negative)
+# cooking photo_sharing fashion shopping (top positive)
+```
+Analyzing the first two principal components of our dataset, we cluster all the followers into three major groups. 
+If we draw an y-axis at x=0, and an x-axis at y=0, we will find inactive twitter users lie on the right of the  y-axis. For all the useres on the left of the y-axis, we consider them as active users and cluster them into two major groups. Those users who lie on the second quadrant, we think they are more likely to be middle-aged people who have a family, since they tend to pay more attention about parenting, religion, and family life. While those users who lie on the third quadrant, they tend to be young ladies who focus more on beauty, shopping, fashion and, photosharing. 
+
+# Q5_AuthorAttribution
+In the following, we will fit a Naive Bayes model and a Random Forest model to 50 articles from 50 different authors to predict the author of a test set of articles on the basis of its textual content.
+
+# Create a Dense Document Term Matrix
+### Import libraries
+```{r}
+library(tm) 
+library(magrittr)
+library(glmnet)
+library(nnet)
+```
+
+### Reader function that specifies English
+```{r}
+readerPlain = function(fname){readPlain(elem=list(content=readLines(fname)), id=fname, language='en')}
+
+train_filelist = Sys.glob('../data/ReutersC50/C50train/*/*.txt')
+test_filelist = Sys.glob('../data/ReutersC50/C50test/*/*.txt')
+train = lapply(train_filelist, readerPlain) 
+test = lapply(test_filelist, readerPlain) 
+```
+
+### Clean up the file names
+```{r}
+names_train = train_filelist %>%
+  { strsplit(., '/', fixed=TRUE) } %>%
+  { lapply(., tail, n=2) } %>%
+  { lapply(., head, n=1) } %>%
+  { lapply(., paste0, collapse = '') } %>%
+  unlist
+
+names_test = test_filelist %>%
+  { strsplit(., '/', fixed=TRUE) } %>%
+  { lapply(., tail, n=2) } %>%
+  { lapply(., head, n=1) } %>%
+  { lapply(., paste0, collapse = '') } %>%
+  unlist
+```
+
+### Rename the articles
+```{r}
+names(train) = names_train
+names(test) = names_test
+```
+
+### Create a corpus of documents
+```{r}
+doc_train_raw = Corpus(VectorSource(train))
+doc_test_raw  = Corpus(VectorSource(test))
+```
+
+### Some pre-processing/tokenization steps.
+tm_map just maps some function to every document in the corpus
+ 1. Make everything lowercase
+ 2. Remove numbers
+ 3. Remove punctuation
+ 4. Remove excess white-space
+ 5. Remove stopwords
+```{r}
+doc_train = doc_train_raw
+doc_train = tm_map(doc_train, content_transformer(tolower)) # make everything lowercase
+doc_train = tm_map(doc_train, content_transformer(removeNumbers)) # remove numbers
+doc_train = tm_map(doc_train, content_transformer(removePunctuation)) # remove punctuation
+doc_train = tm_map(doc_train, content_transformer(stripWhitespace)) ## remove excess white-space
+
+doc_test = doc_test_raw
+doc_test = tm_map(doc_test, content_transformer(tolower)) 
+doc_test = tm_map(doc_test, content_transformer(removeNumbers)) 
+doc_test = tm_map(doc_test, content_transformer(removePunctuation)) 
+doc_test = tm_map(doc_test, content_transformer(stripWhitespace))
+
+doc_train = tm_map(doc_train, content_transformer(removeWords), stopwords("en"))
+doc_test = tm_map(doc_test, content_transformer(removeWords), stopwords("en"))
+```
+
+### Create a doc-term-matrix
+```{r}
+DTM_train = DocumentTermMatrix(doc_train, control = list(weighting = weightTfIdf))
+DTM_test = DocumentTermMatrix(doc_test, control = list(weighting = weightTfIdf))
+```
+
+### Remove those terms that have count 0 in >99.6% of docs
+```{r}
+DTM_train = removeSparseTerms(DTM_train, 0.996)
+DTM_test = removeSparseTerms(DTM_test, 0.996)
+
+DTM_train_dataFrame = as.data.frame(as.matrix(DTM_train))
+DTM_test_dataFrame = as.data.frame(as.matrix(DTM_test))
+```
+
+### Only handle the words that are both in the test set and training set.
+```{r}
+intersection = intersect(names(DTM_train_dataFrame),names(DTM_test_dataFrame))
+DTM_train_dataFrame = DTM_train_dataFrame[,intersection]
+DTM_test_dataFrame = DTM_test_dataFrame[,intersection]
+```
+
+### Convert to dataframe for nb and rf classifiers
+```{r}
+author_train = factor(names(train))
+author_test = factor(names(test))
+
+X_train<-data.frame(DTM_train_dataFrame)
+X_train$author = author_train
+X_test<-data.frame(DTM_test_dataFrame)
+X_test$author = author_test
+```
+
+# Model 1: Naive Bayes
+This model assumes words are independently distributed.
+```{r}
+library(naivebayes)
+nb.listing = naive_bayes(author ~ ., data = X_train)
+nb.pred = data.frame(predict(nb.listing,X_test))
+compare_nb = data.frame(cbind(nb.pred,X_test$author))
+compare_nb$correct = compare_nb$predict.nb.listing..X_test. == compare_nb$X_test.author
+mean(compare_nb$correct)
+```
+This model correctly predicts the author about 58.4% of the time across the entire test set.
+
+# Model 2: Random Forest
+```{r}
+set.seed(1)
+library(randomForest)
+rf.listing = randomForest(author ~ ., data = X_train, distribution = 'multinomial', n.trees=200)
+rf.pred = data.frame(predict(rf.listing,newdata = X_test))
+compare_rf = data.frame(cbind(rf.pred,X_test$author))
+compare_rf$correct = compare_rf$predict.rf.listing..newdata...X_test. == compare_rf$X_test.author
+mean(compare_rf$correct)
+```
+This model correctly predicts the author about 66.36% of the time across the entire test set.
+
+# Conclusion and Insights
+Overall, Naive Bayes and Random Forest both give decent results in predicting author identities with prediction accuracies of 58.4% and 66.36%, respectively. Naive Bayes may not be a good model for classifying authors because it assumes that all variables are independent and word usage is in no way independent. Although, in terms of computing time, Naive Bayes is far more efficient to run than Random Forest is.
+
+# Q6_Grocery
+
+## Read data
+Read data files and create transactions object.
+```{r}
+library(tidyverse)
+library(arules)  # has a big ecosystem of packages built around it
+library(arulesViz)
+
+groceries = read.transactions("groceries.txt", sep=',')
+summary(groceries)
+```
+
+## Generate rules
+We try apriori algorithm with 0.01 support and 0.2 confidence. This choice will  drop rarer purchases, but weaker relationships will be kept.
+```{r}
+groceriesrules <- apriori(groceries,parameter=list(support=.01, confidence=.2, maxlen=10))
+
+plot(groceriesrules, measure = c("support", "lift"), shading = "confidence")
+plot(groceriesrules, measure = c("support", "confidence"), shading = "lift")
+plot(groceriesrules, method='two-key plot')
+```
+
+## Choose a subset
+Greater lift values indicate stronger associations. We choose the rule with a value greater than 2. The lift parameter ensures that very weak relationships are still dropped. At these levels, we see that a variety of grocery items--dairy, fruits, and meats--are associated with the purchase of root vegetables. Furthermore, we also see that buying any type of dairy (especially in conjunction with a produce item) is associated with buying another type. That's make sense in real life.
+```{r}
+subset_grule <- subset(groceriesrules, subset=lift > 2)
+inspect(subset_grule)
+plot(subset_grule, method='graph')
+plot(head(subset_grule, 10, by='lift'), method='graph')
+```
