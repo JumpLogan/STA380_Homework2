@@ -39,7 +39,7 @@ par(cex = 0.7)
 corrplot(cormp, method ='shade',tl.cex = 0.65)
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-2-1.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 ``` r
 #par(cex = cex.before)
@@ -183,7 +183,7 @@ SSE_grid = foreach(k=k_grid, .combine = "c") %do% {
 plot(k_grid, SSE_grid, xlim=c(0,20))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-4-1.png) \# CH Index - measure goodness of fit \# Find the K that maximize CH\_grid
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-4-1.png) \# CH Index - measure goodness of fit \# Find the K that maximize CH\_grid
 
 ``` r
 N=nrow(mkt_seg)
@@ -196,14 +196,14 @@ CH_grid = foreach(k=k_grid, .combine = "c") %do% {
 plot(k_grid, CH_grid)
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-5-1.png) From the within cluster sum-of-square plot and the CH index plot, we determine that the optimal number of clusters is between 2 and 15. We would like to use 5 as our number of clusters. \# K-means clustering
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-5-1.png) From the within cluster sum-of-square plot and the CH index plot, we determine that the optimal number of clusters is between 2 and 15. We would like to use 5 as our number of clusters. \# K-means clustering
 
 ``` r
 set.seed(8)
 plot(mkt_seg[c("outdoors","computers")],col=kmeans$cluster)
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ``` r
 names(mkt_seg)
@@ -227,108 +227,108 @@ names(mkt_seg)
 qplot(food, cooking, data=mkt_seg, color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-2.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-2.png)
 
 ``` r
 qplot(mkt_seg$online_gaming,mkt_seg$college_uni,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-3.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-3.png)
 
 ``` r
 qplot(mkt_seg$art,mkt_seg$music,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-4.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-4.png)
 
 ``` r
 qplot(mkt_seg$small_business,mkt_seg$art,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-5.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-5.png)
 
 ``` r
 qplot(mkt_seg$personal_fitness,mkt_seg$health_nutrition,color=factor(kmeans$cluster)) 
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-6.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-6.png)
 
 ``` r
 qplot(mkt_seg$politics,mkt_seg$travel,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-7.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-7.png)
 
 ``` r
 qplot(mkt_seg$politics,mkt_seg$current_events,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-8.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-8.png)
 
 ``` r
 qplot(mkt_seg$politics,mkt_seg$small_business,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-9.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-9.png)
 
 ``` r
 # cluster 1 
 qplot(mkt_seg$beauty,mkt_seg$cooking,color=factor(kmeans$cluster)) 
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-10.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-10.png)
 
 ``` r
 qplot(mkt_seg$cooking, mkt_seg$fashion,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-11.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-11.png)
 
 ``` r
 # cluster 2
 qplot(mkt_seg$politics,mkt_seg$travel,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-12.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-12.png)
 
 ``` r
 qplot(mkt_seg$politics,mkt_seg$news,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-13.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-13.png)
 
 ``` r
 qplot(mkt_seg$politics,mkt_seg$small_business,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-14.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-14.png)
 
 ``` r
 # cluster 3
 qplot(mkt_seg$religion,mkt_seg$sports_fandom,color=factor(kmeans$cluster)) 
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-15.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-15.png)
 
 ``` r
 qplot(mkt_seg$family,mkt_seg$parenting,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-16.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-16.png)
 
 ``` r
 # cluster 4 
 qplot(mkt_seg$politics,mkt_seg$current_events,color=factor(kmeans$cluster))
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-17.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-17.png)
 
 ``` r
 # cluster 5 
 qplot(mkt_seg$adult,mkt_seg$spam,color=factor(kmeans$cluster)) # cluster 5 
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-6-18.png) \# Clustering Results
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-6-18.png) \# Clustering Results
 
 ``` r
 a=which(kmeans$cluster == 1)
@@ -417,13 +417,13 @@ pc = prcomp(features, scale=TRUE)
 plot(pc,type="l")
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ``` r
 bp = biplot(pc, scale=0, cex=0.3)
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-8-2.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-8-2.png)
 
 ``` r
 # Extract PC scores 
@@ -439,7 +439,7 @@ ggplot(df, aes(PC1, PC2)) +
   geom_point(shape =21, col='black')
 ```
 
-![](Market_Seg_v1__files/figure-markdown_github/unnamed-chunk-8-3.png)
+![](Market_Seg_files/figure-markdown_github/unnamed-chunk-8-3.png)
 
 ``` r
 #pc$x[,1:25]
